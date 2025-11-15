@@ -326,11 +326,7 @@ const InquiriesDashboard = () => {
                       {inquiry.profession || "N/A"}
                     </span>
                   </div>
-                    <div
-                      className={`px-2 my-3 text-md rounded-full  font-medium w-fit bg-black py-1 text-white`}
-                    >
-                   <strong className="text-green-500 " > Sample downloaded :</strong>  {inquiry?.samplePdf?.title || "N/A"}
-                    </div>
+
                   {/* Info Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                     <div>

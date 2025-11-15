@@ -1,0 +1,114 @@
+# ========================
+# 🌐 MERN + VITE .gitignore
+# ========================
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+client/dist/
+server/dist/
+.next/
+out/
+coverage/
+
+# Local environment files
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+tmp/
+temp/
+.cache/
+.vite/
+vite.config.timestamp-*
+*.pid
+*.seed
+*.pid.lock
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.iml
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Testing
+coverage/
+*.lcov
+
+# TypeScript build files
+*.tsbuildinfo
+
+# Uploads (if any stored locally)
+uploads/
+public/uploads/
+tmp_uploads/
+uploads/tmp/
+
+# Cloud/Secrets
+cloudinary.json
+firebase.json
+serviceAccountKey.json
+
+# Lock files (optional — uncomment if using only one package manager)
+# yarn.lock
+# package-lock.json
+# pnpm-lock.yaml
+
+# Frontend cache
+.cache/
+.eslintcache
+eslintcache/
+
+# IDE-specific
+*.idea/
+*.vscode/
+*.history/
+*.code-workspace
+
+# Misc
+*.tgz
+*.zip
+*.tar
+*.gz
+
+# Ignore macOS / Linux temp files
+*.swp
+*.swo
+*~
+
+# End of file

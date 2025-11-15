@@ -112,7 +112,7 @@ const PdfUploadForm = ({ onclose }) => {
       }
     } catch (err) {
       console.error("Error creating PDF:", err);
-      toast.error("Failed to upload PDF. Please try again.");
+      // toast.error("Failed to upload PDF. Please try again.");
       setUploading(false);
       setUploadProgress(0);
     }
@@ -127,11 +127,11 @@ const PdfUploadForm = ({ onclose }) => {
         e.target.value = "";
         return;
       }
-      // if (file.size > 10 * 1024 * 1024) {
-      //   toast.error("File size must be less than 10MB");
-      //   e.target.value = "";
-      //   return;
-      // }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10MB");
+        e.target.value = "";
+        return;
+      }
       setFormData({ ...formData, pdf: file });
     }
   };
