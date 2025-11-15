@@ -10,6 +10,7 @@ import ReviewsDashboard from "../components/BookReviews";
 import PDFDashboard from "../components/PDFDashboard";
 
 import "../index.css"; // ✅ Make sure global CSS (with scrollbar-hide class) is imported
+import RegisteredUserDashboard from "../components/RegisteredUserDashboard";
 
 const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -38,6 +39,7 @@ const DashboardLayout = () => {
         {activeTab === "testimonials" && <TestimonialsDashboard />}
         {activeTab === "reviews" && <ReviewsDashboard />}
         {activeTab === "pdf" && <PDFDashboard />}
+        {activeTab === "user" && <RegisteredUserDashboard />}
         
       </div>
     </div>
