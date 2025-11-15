@@ -45,6 +45,7 @@ const RegisteredUserDashboard = () => {
 
     const formattedData = filtered.map((inq, index) => ({
       SRno: index + 1,
+      number:inq.number ?? inq?.address?.phone,
       ...inq,
     }));
 
