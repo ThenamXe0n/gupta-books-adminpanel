@@ -1,0 +1,744 @@
+import React, { useEffect, useState } from "react";
+import {
+  Plus,
+  Trash2,
+  Upload,
+  Calendar,
+  FileText,
+  Edit3,
+  X,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+// import axios from "axios";
+import axiosInstance from "../services/axiosInstance";
+import MultiSelect from "./ui/MultiSelect";
+
+const OffersDashboard = () => {
+  const [products, setProducts] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingOffer, setEditingOffer] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const [formData, setFormData] = useState({
+    discount: "",
+    start_time: "",
+    end_time: "",
+    poster: "",
+    posterAlt: "",
+    offer_details: "",
+  });
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // Fetch all offers
+  const fetchOffers = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get("/v1/offer");
+      if (res.data.status) {
+        setOffers(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+      showMessage("Error fetching offers", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBooks = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get("/books?limit=100");
+
+      setProducts(response.data?.data?.books || []);
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Error fetching books:", err);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOffers();
+    fetchBooks();
+  }, []);
+
+  // Show success/error message
+  const showMessage = (message, type = "success") => {
+    setSuccessMessage({ message, type });
+    setTimeout(() => setSuccessMessage(""), 4000);
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+
+ 
+
+    if (!formData.start_time) {
+      errors.start_time = "Start date is required";
+    }
+
+    if (!formData.end_time) {
+      errors.end_time = "End date is required";
+    }
+
+    if (formData.start_time && formData.end_time) {
+      const startDate = new Date(formData.start_time);
+      const endDate = new Date(formData.end_time);
+      if (endDate <= startDate) {
+        errors.end_time = "End date must be after start date";
+      }
+    }
+
+    if (!formData.posterAlt.trim()) {
+      errors.posterAlt = "Alt text is required for accessibility";
+    }
+
+    if (!formData.offer_details.trim()) {
+      errors.offer_details = "Offer details are required";
+    }
+
+    if (!formData.poster && !selectedFile) {
+      errors.poster = "Poster image is required";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle file selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setFormErrors((prev) => ({
+        ...prev,
+        poster: "Please select a valid image file (JPEG, PNG, WebP, GIF)",
+      }));
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFormErrors((prev) => ({
+        ...prev,
+        poster: "Image size must be less than 5MB",
+      }));
+      return;
+    }
+
+    setSelectedFile(file);
+    setFormErrors((prev) => ({ ...prev, poster: "" }));
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        poster: reader.result, // Temporary preview
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Remove selected image
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setFormData((prev) => ({ ...prev, poster: "" }));
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      discount: "",
+      start_time: "",
+      end_time: "",
+      poster: "",
+      posterAlt: "",
+      offer_details: "",
+    });
+    setSelectedFile(null);
+    setFormErrors({});
+    setEditingOffer(null);
+  };
+
+  // Prepare form data for submission
+  const prepareFormData = () => {
+    const data = new FormData();
+
+    // Append text fields
+    data.append("discount", formData.discount);
+    data.append("start_time", formData.start_time);
+    data.append("end_time", formData.end_time);
+    data.append("posterAlt", formData.posterAlt);
+    data.append("offer_details", formData.offer_details);
+    data.append("books", JSON.stringify(formData.books));
+
+    // IMPORTANT: Use 'image' as field name to match Multer configuration
+    if (selectedFile) {
+      data.append("file", selectedFile); // Changed from 'poster' to 'image'
+    }
+
+    return data;
+  };
+
+  // Add new offer
+  const handleAddOffer = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const formDataToSend = prepareFormData();
+
+      console.log("Sending form data with field name 'image' for file upload");
+
+      const res = await axiosInstance.post("/v3/offer", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Response:", res.data);
+
+      if (res.data.success || res.data.status) {
+        fetchOffers();
+        setShowForm(false);
+        resetForm();
+        showMessage("Offer added successfully!");
+      }
+    } catch (error) {
+      console.error("Error adding offer:", error);
+      console.error("Error response:", error.response?.data);
+      showMessage(
+        error.response?.data?.message || "Error adding offer",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Edit offer
+  const handleEdit = (offer) => {
+    setEditingOffer(offer._id);
+    // Convert dates to local datetime format for the input
+    const formatDateForInput = (dateString) => {
+      const date = new Date(dateString);
+      return date.toISOString().slice(0, 16);
+    };
+
+    setFormData({
+      discount: offer.discount,
+      start_time: formatDateForInput(offer.start_time),
+      end_time: formatDateForInput(offer.end_time),
+      poster: offer.poster,
+      books: offer.boooks || [],
+      posterAlt: offer.posterAlt,
+      offer_details: offer.offer_details,
+    });
+    setSelectedFile(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Update offer
+  const handleUpdateOffer = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const formDataToSend = prepareFormData();
+
+      console.log("Updating offer with field name 'image' for file upload");
+
+      const res = await axiosInstance.put(
+        `/v3/offer/${editingOffer}`,
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Update response:", res.data);
+
+      if (res.data.status || res.data.success) {
+        fetchOffers();
+        setShowForm(false);
+        resetForm();
+        showMessage("Offer updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating offer:", error);
+      console.error("Error response:", error.response?.data);
+      showMessage(
+        error.response?.data?.message || "Error updating offer",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete offer
+  const handleDelete = async (id) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this offer? This action cannot be undone."
+      )
+    )
+      return;
+
+    try {
+      await axiosInstance.delete(`/v3/offer/${id}`);
+      fetchOffers();
+      showMessage("Offer deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting offer:", error);
+      showMessage("Error deleting offer", "error");
+    }
+  };
+
+  // Check if offer is active
+  const isOfferActive = (offer) => {
+    const now = new Date();
+    const start = new Date(offer.start_time);
+    const end = new Date(offer.end_time);
+    return now >= start && now <= end;
+  };
+
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Success/Error Message */}
+      {successMessage && (
+        <div
+          className={`p-4 rounded-lg border ${
+            successMessage.type === "error"
+              ? "bg-red-50 border-red-200 text-red-700"
+              : "bg-green-50 border-green-200 text-green-700"
+          } flex items-center space-x-2`}
+        >
+          {successMessage.type === "error" ? (
+            <AlertCircle size={20} />
+          ) : (
+            <CheckCircle2 size={20} />
+          )}
+          <span>{successMessage.message}</span>
+          <button onClick={() => setSuccessMessage("")} className="ml-auto">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Offers Dashboard</h2>
+          <p className="text-gray-600 mt-1">
+            Manage your special offers and promotions
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setShowForm(!showForm);
+            if (showForm) resetForm();
+          }}
+          className="flex items-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 size={18} className="mr-2 animate-spin" />
+          ) : showForm ? (
+            <X size={18} className="mr-2" />
+          ) : (
+            <Plus size={18} className="mr-2" />
+          )}
+          {showForm ? "Cancel" : "Add Offer"}
+        </button>
+      </div>
+
+      {/* Add/Edit Offer Form */}
+      {showForm && (
+        <form
+          onSubmit={editingOffer ? handleUpdateOffer : handleAddOffer}
+          className="bg-white shadow-lg rounded-xl p-6 space-y-6 border border-gray-100"
+          encType="multipart/form-data"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {editingOffer ? "Edit Offer" : "Create New Offer"}
+            </h3>
+            {editingOffer && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Discount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Discount Price (flat Off) *
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleChange}
+                  required
+                  className={`w-full border rounded-lg px-3 py-2 pl-10 focus:ring-2 focus:border-transparent ${
+                    formErrors.discount
+                      ? "border-red-300 focus:ring-red-200"
+                      : "border-gray-300 focus:ring-blue-200"
+                  }`}
+                  placeholder="Enter discount percentage"
+                />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                  ₹
+                </span>
+              </div>
+              {formErrors.discount && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {formErrors.discount}
+                </p>
+              )}
+            </div>
+
+            {/* Poster Alt Text */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Poster Alt Text *
+              </label>
+              <input
+                type="text"
+                name="posterAlt"
+                value={formData.posterAlt}
+                onChange={handleChange}
+                required
+                className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:border-transparent ${
+                  formErrors.posterAlt
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-blue-200"
+                }`}
+                placeholder="Describe the poster for accessibility"
+              />
+              {formErrors.posterAlt && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {formErrors.posterAlt}
+                </p>
+              )}
+            </div>
+
+            {/* Start Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Start Date *
+              </label>
+              <input
+                type="datetime-local"
+                name="start_time"
+                value={formData.start_time}
+                onChange={handleChange}
+                required
+                // min={new Date().toISOString().slice(0, 16)}
+                className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:border-transparent ${
+                  formErrors.start_time
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-blue-200"
+                }`}
+              />
+              {formErrors.start_time && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {formErrors.start_time}
+                </p>
+              )}
+            </div>
+
+            {/* End Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                End Date *
+              </label>
+              <input
+                type="datetime-local"
+                name="end_time"
+                value={formData.end_time}
+                onChange={handleChange}
+                required
+                min={
+                  formData.start_time || new Date().toISOString().slice(0, 16)
+                }
+                className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:border-transparent ${
+                  formErrors.end_time
+                    ? "border-red-300 focus:ring-red-200"
+                    : "border-gray-300 focus:ring-blue-200"
+                }`}
+              />
+              {formErrors.end_time && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {formErrors.end_time}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <MultiSelect
+            label="Select Books (Multiple)"
+            options={products.map((book) => ({
+              value: book._id || book.id,
+              label: book.title,
+              class: book.class,
+            }))}
+            selected={formData.books || []}
+            onChange={(selected) => handleInputChange("books", selected)}
+            disabled={loading}
+          />
+
+          {/* Offer Details */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Offer Details *
+            </label>
+            <textarea
+              name="offer_details"
+              rows="4"
+              value={formData.offer_details}
+              onChange={handleChange}
+              required
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:border-transparent ${
+                formErrors.offer_details
+                  ? "border-red-300 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-blue-200"
+              }`}
+              placeholder="Describe the offer details, terms, and conditions..."
+            />
+            {formErrors.offer_details && (
+              <p className="text-red-600 text-sm mt-1 flex items-center">
+                <AlertCircle size={14} className="mr-1" />
+                {formErrors.offer_details}
+              </p>
+            )}
+          </div>
+
+          {/* Poster Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Poster Image *
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-lg border border-gray-300 cursor-pointer transition-colors">
+                  <Upload size={16} />
+                  <span>Choose Image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-sm text-gray-500">
+                  Max 5MB • PNG, JPG, WebP, GIF
+                </span>
+              </div>
+
+              {formErrors.poster && (
+                <p className="text-red-600 text-sm flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {formErrors.poster}
+                </p>
+              )}
+
+              {formData.poster && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-700 mb-2">
+                    {selectedFile ? "New Image Preview:" : "Current Image:"}
+                  </p>
+                  <div className="relative inline-block">
+                    <img
+                      src={formData.poster}
+                      alt="preview"
+                      className="w-32 h-32 rounded-lg object-cover border border-gray-300 shadow-sm"
+                    />
+                    {selectedFile && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                  {selectedFile && (
+                    <p className="text-sm text-green-600 mt-1">
+                      New image selected: {selectedFile.name}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {loading && <Loader2 size={16} className="mr-2 animate-spin" />}
+              {editingOffer ? "Update Offer" : "Create Offer"}
+            </button>
+
+            <button
+              type="button"
+              onClick={resetForm}
+              disabled={loading}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Reset
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Offers List */}
+      <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-800">All Offers</h3>
+          <div className="text-sm text-gray-500">
+            {offers.length} offer{offers.length !== 1 ? "s" : ""} total
+          </div>
+        </div>
+
+        {loading && !showForm ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 size={32} className="animate-spin text-blue-500" />
+          </div>
+        ) : offers.length === 0 ? (
+          <div className="text-center py-12">
+            <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">No offers found</p>
+            <p className="text-gray-400 mt-2">
+              Create your first offer to get started
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {offers.map((offer) => (
+              <div
+                key={offer._id}
+                className={`border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all ${
+                  !isOfferActive(offer) ? "opacity-60" : ""
+                }`}
+              >
+                <div className="relative">
+                  <img
+                    src={offer.poster}
+                    alt={offer.posterAlt}
+                    className="w-full h-48 object-cover"
+                  />
+                  {!isOfferActive(offer) && (
+                    <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+                      <span className="text-white font-semibold bg-gray-800 px-3 py-1 rounded-full text-sm">
+                        Expired
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-bold">
+                    {offer.discount}% OFF
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  <h4 className="font-semibold text-gray-900 line-clamp-2">
+                    {offer.offer_details}
+                  </h4>
+
+                  <div className="flex items-center text-sm text-gray-500 space-x-2">
+                    <Calendar size={14} />
+                    <span>
+                      {new Date(offer.start_time).toLocaleDateString()} -{" "}
+                      {new Date(offer.end_time).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2">
+                    <button
+                      onClick={() => handleEdit(offer)}
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
+                      <Edit3 size={14} />
+                      <span>Edit</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(offer._id)}
+                      className="flex items-center space-x-1 text-red-600 hover:text-red-800 text-sm font-medium"
+                    >
+                      <Trash2 size={14} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default OffersDashboard;
