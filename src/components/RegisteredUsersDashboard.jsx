@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Search, Download } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
-const UserListPage = () => {
+const RegisteredUserDashboard = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,17 +36,35 @@ const UserListPage = () => {
     );
   });
 
-  const exportJSON = () => {
-    const blob = new Blob([JSON.stringify(filtered, null, 2)], {
-      type: "application/json",
+  // 📤 Export
+  const handleExportToExcel = () => {
+    if (filtered.length === 0) {
+      alert("No inquiries to export!");
+      return;
+    }
+
+    const formattedData = filtered.map((inq, index) => ({
+      SRno: index + 1,
+      number:inq.number ?? inq?.address?.phone,
+      address:inq?.address.line1 + " " + inq?.address.line2,
+      city:inq?.address?.city,
+      state:inq?.address?.state,
+      ...inq,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inquiries");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `users_${new Date().toLocaleDateString()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `Inquiries_${new Date().toLocaleDateString()}.xlsx`);
   };
+
+  
 
   if (loading) return <p className="text-center py-5">Loading users...</p>;
 
@@ -70,11 +90,11 @@ const UserListPage = () => {
           </div>
 
           <button
-            onClick={exportJSON}
+            onClick={handleExportToExcel}
             className="flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 transition text-white rounded-lg text-sm shadow"
           >
             <Download size={14} />
-            <span>Export JSON</span>
+            <span>Export excel</span>
           </button>
         </div>
       </div>
@@ -84,13 +104,27 @@ const UserListPage = () => {
         <table className="min-w-full border-collapse">
           <thead className="bg-gray-100 border-b">
             <tr>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Name</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Email</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Phone</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Address</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">City</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">State</th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Role</th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                Name
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                Email
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                Phone
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                Address
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                City
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                State
+              </th>
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                Role
+              </th>
             </tr>
           </thead>
 
@@ -107,15 +141,16 @@ const UserListPage = () => {
             )}
 
             {filtered.map((user, index) => (
-              <tr
-                key={index}
-                className="border-b hover:bg-gray-50 transition"
-              >
+              <tr key={index} className="border-b hover:bg-gray-50 transition">
                 <td className="py-3 px-4 text-sm font-medium text-gray-900 capitalize">
                   {user.name || "-"}
                 </td>
-                <td className="py-3 px-4 text-sm text-gray-700">{user.email || "-"}</td>
-                <td className="py-3 px-4 text-sm text-gray-700">{user.number || "-"}</td>
+                <td className="py-3 px-4 text-sm text-gray-700">
+                  {user.email || "-"}
+                </td>
+                <td className="py-3 px-4 text-sm text-gray-700">
+                  {user.number || "-"}
+                </td>
 
                 <td className="py-3 px-4 text-sm text-gray-700">
                   {user.address?.line1 || user.address?.line2
@@ -145,4 +180,4 @@ const UserListPage = () => {
   );
 };
 
-export default UserListPage;
+export default RegisteredUserDashboard;
