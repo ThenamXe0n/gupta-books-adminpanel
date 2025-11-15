@@ -14,7 +14,7 @@ import ProductCard from "./ProductCard";
 
 // Constants
 import { FORM_CONFIG, DROPDOWN_OPTIONS } from "../constants/productConstants";
-import { Loading } from "notiflix";
+import Notiflix, { Loading } from "notiflix";
 
 const ProductsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,7 +68,7 @@ const ProductsDashboard = () => {
     }
   };
 
-  const handleAddVideoRemove = () => {
+  const handleAddVideoRemove = async () => {
     setAddVideo(null);
     setAddVideoPreview(null);
   };
@@ -83,9 +83,18 @@ const ProductsDashboard = () => {
     }
   };
 
-  const handleEditVideoRemove = () => {
-    setEditVideo(null);
-    setEditVideoPreview(null);
+  const handleEditVideoRemove = async () => {
+    if (!confirm("are you sure to remove this video from book??")) {
+      return;
+    } else {
+      Notiflix.Loading.pulse();
+      await axiosInstance.patch(
+        `/books/remove-video-from-book/${editingProduct?._id}`
+      );
+      setEditVideo(null);
+      setEditVideoPreview(null);
+      Notiflix.Loading.remove();
+    }
   };
 
   // Form Handlers
@@ -169,7 +178,7 @@ const ProductsDashboard = () => {
     try {
       await axiosInstance.delete(`/books/${id}`);
       setProducts((prev) => prev.filter((p) => p._id !== id));
-      Loading.remove()
+      Loading.remove();
     } catch (err) {
       Loading.remove();
       setError(err.response?.data?.message || "Failed to delete book.");
