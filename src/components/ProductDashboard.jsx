@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Search, File, BookOpen , Edit } from "lucide-react";
+import { Plus, Search, File, BookOpen, Edit } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
 
 // Hooks
@@ -14,6 +14,7 @@ import ProductCard from "./ProductCard";
 
 // Constants
 import { FORM_CONFIG, DROPDOWN_OPTIONS } from "../constants/productConstants";
+import { Loading } from "notiflix";
 
 const ProductsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,17 +23,37 @@ const ProductsDashboard = () => {
   const [showEditForm, setShowEditForm] = useState(false);
 
   const { products, loading, error, setProducts, setError } = useProducts();
-  
-  const { formData: newProduct, updateField: updateNewProduct, resetForm } = useProductForm(FORM_CONFIG.initialState);
-  const { formData: editingProduct, updateField: updateEditingProduct, setFormData: setEditingProduct } = useProductForm(FORM_CONFIG.initialState);
 
-  const { images: addImages, imagePreviews: addImagePreviews, handleImageUpload: handleAddImageUpload, removeImage: removeAddImage } = useImageUpload();
-  const { images: editImages, imagePreviews: editImagePreviews, handleImageUpload: handleEditImageUpload, removeImage: removeEditImage, setImages: setEditImages, setImagePreviews: setEditImagePreviews } = useImageUpload();
+  const {
+    formData: newProduct,
+    updateField: updateNewProduct,
+    resetForm,
+  } = useProductForm(FORM_CONFIG.initialState);
+  const {
+    formData: editingProduct,
+    updateField: updateEditingProduct,
+    setFormData: setEditingProduct,
+  } = useProductForm(FORM_CONFIG.initialState);
+
+  const {
+    images: addImages,
+    imagePreviews: addImagePreviews,
+    handleImageUpload: handleAddImageUpload,
+    removeImage: removeAddImage,
+  } = useImageUpload();
+  const {
+    images: editImages,
+    imagePreviews: editImagePreviews,
+    handleImageUpload: handleEditImageUpload,
+    removeImage: removeEditImage,
+    setImages: setEditImages,
+    setImagePreviews: setEditImagePreviews,
+  } = useImageUpload();
 
   // Video state for add form
   const [addVideo, setAddVideo] = useState(null);
   const [addVideoPreview, setAddVideoPreview] = useState(null);
-  
+
   // Video state for edit form
   const [editVideo, setEditVideo] = useState(null);
   const [editVideoPreview, setEditVideoPreview] = useState(null);
@@ -69,96 +90,114 @@ const ProductsDashboard = () => {
 
   // Form Handlers
   const handleAddProduct = async () => {
+    Loading.circle();
     if (!FORM_CONFIG.validateRequiredFields(newProduct)) {
       setError("Please fill in all required fields (*)");
+      Loading.remove();
       return;
     }
 
     try {
       setError("");
-      const formData = FORM_CONFIG.createFormData({ 
-        ...newProduct, 
+      const formData = FORM_CONFIG.createFormData({
+        ...newProduct,
         images: addImages,
-        video: addVideo // Include video in form data
+        video: addVideo, // Include video in form data
       });
-      
+
       const response = await axiosInstance.post("v3/books", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setProducts(prev => [response.data.data || response.data, ...prev]);
+      setProducts((prev) => [response.data.data || response.data, ...prev]);
       setShowAddForm(false);
       resetForm();
       // Reset video state
       setAddVideo(null);
       setAddVideoPreview(null);
+      Loading.remove();
     } catch (err) {
+      Loading.remove();
       setError(err.response?.data?.message || "Failed to create book.");
     }
   };
 
   const handleUpdateProduct = async () => {
+    Loading.circle();
     if (!FORM_CONFIG.validateRequiredFields(editingProduct)) {
       setError("Please fill in all required fields (*)");
+      Loading.remove();
       return;
     }
 
     try {
       setError("");
-      const formData = FORM_CONFIG.createFormData({ 
-        ...editingProduct, 
-        images: editImages,
-        video: editVideo // Include video in form data
-      }, true);
-      
+      const formData = FORM_CONFIG.createFormData(
+        {
+          ...editingProduct,
+          images: editImages,
+          video: editVideo, // Include video in form data
+        },
+        true
+      );
+
       const response = await axiosInstance.put(
         `/books/${editingProduct._id}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      setProducts(prev => prev.map(p => p._id === editingProduct._id ? response.data.data : p));
+      setProducts((prev) =>
+        prev.map((p) => (p._id === editingProduct._id ? response.data.data : p))
+      );
       setShowEditForm(false);
       setEditingProduct(FORM_CONFIG.initialState);
       // Reset video state
       setEditVideo(null);
       setEditVideoPreview(null);
+      Loading.remove();
     } catch (err) {
+      Loading.remove();
       setError(err.response?.data?.message || "Failed to update book.");
     }
   };
 
   const handleDeleteProduct = async (id) => {
+    Loading.circle();
     if (!window.confirm("Are you sure you want to delete this book?")) return;
 
     try {
       await axiosInstance.delete(`/books/${id}`);
-      setProducts(prev => prev.filter(p => p._id !== id));
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      Loading.remove()
     } catch (err) {
+      Loading.remove();
       setError(err.response?.data?.message || "Failed to delete book.");
     }
   };
 
   const handleEditProduct = (product) => {
+    Loading.circle();
     window.scrollTo({ top: 0, behavior: "smooth" });
     setEditingProduct({
       ...product,
       images: product.images || [],
-      imagePreviews: product.images?.map(img => img.url) || []
+      imagePreviews: product.images?.map((img) => img.url) || [],
     });
     setEditImages(product.images || []);
-    setEditImagePreviews(product.images?.map(img => img.url) || []);
-    
+    setEditImagePreviews(product.images?.map((img) => img.url) || []);
+
     // Set video preview for edit form if video exists
     if (product.video) {
       setEditVideoPreview(product.video.url || product.video);
     }
-    
+
     setShowEditForm(true);
+    Loading.remove();
   };
 
-  const filteredProducts = products.filter(product =>
-    FORM_CONFIG.searchFields.some(field =>
+  const filteredProducts = products.filter((product) =>
+    FORM_CONFIG.searchFields.some((field) =>
       product[field]?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -314,7 +353,10 @@ const SearchBar = ({ searchTerm, onSearchChange, resultsCount }) => (
   <div className="bg-white rounded-2xl shadow-lg p-6">
     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-center">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+        <Search
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          size={16}
+        />
         <input
           type="text"
           placeholder="Search books by title, author, subject, or class..."
@@ -332,12 +374,16 @@ const SearchBar = ({ searchTerm, onSearchChange, resultsCount }) => (
 
 const ProductsGrid = ({ products, onEdit, onDelete, allProducts }) => {
   if (products.length === 0) {
-    return allProducts.length === 0 ? <EmptyInventoryState /> : <NoResultsState />;
+    return allProducts.length === 0 ? (
+      <EmptyInventoryState />
+    ) : (
+      <NoResultsState />
+    );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map(product => (
+      {products.map((product) => (
         <ProductCard
           key={product._id || product.id}
           product={product}
@@ -352,8 +398,12 @@ const ProductsGrid = ({ products, onEdit, onDelete, allProducts }) => {
 const EmptyInventoryState = () => (
   <div className="text-center py-12">
     <BookOpen size={36} className="mx-auto text-gray-400 mb-4" />
-    <h3 className="text-lg font-semibold text-gray-600 mb-2">No books in inventory</h3>
-    <p className="text-gray-700 text-sm">Get started by adding your first book to the inventory.</p>
+    <h3 className="text-lg font-semibold text-gray-600 mb-2">
+      No books in inventory
+    </h3>
+    <p className="text-gray-700 text-sm">
+      Get started by adding your first book to the inventory.
+    </p>
   </div>
 );
 
@@ -391,7 +441,9 @@ const ProductFormModal = ({
 }) => (
   <div className="bg-white rounded-2xl shadow-lg p-8">
     <div className="flex items-center space-x-3 mb-6">
-      <div className={`w-10 h-10 bg-gradient-to-r ${iconBg} rounded-xl flex items-center justify-center`}>
+      <div
+        className={`w-10 h-10 bg-gradient-to-r ${iconBg} rounded-xl flex items-center justify-center`}
+      >
         {icon}
       </div>
       <div>
@@ -405,7 +457,7 @@ const ProductFormModal = ({
       onImageRemove={onImageRemove}
       onImageUpload={onImageUpload}
       loading={loading}
-      uploadId={title.toLowerCase().replace(' ', '-') + "-upload"}
+      uploadId={title.toLowerCase().replace(" ", "-") + "-upload"}
     />
 
     <ProductForm
