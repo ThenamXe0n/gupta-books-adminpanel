@@ -227,7 +227,9 @@ const InquiriesDashboard = () => {
         {/* Header + Filters */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 space-y-3 lg:space-y-0">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Customer Inquiries</h2>
+            <h2 className="text-lg font-bold text-gray-900">
+              Customer Inquiries
+            </h2>
             <p className="text-sm text-gray-500">
               {activeFilter === "all" && "Showing all inquiries"}
               {activeFilter === "sample" && "Showing sample PDF downloaders"}
@@ -325,6 +327,17 @@ const InquiriesDashboard = () => {
                     >
                       {inquiry.profession || "N/A"}
                     </span>
+                    {inquiry?.samplePdf && (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium bg-yellow-300 `}
+                      >
+                        {inquiry?.samplePdf?.title +
+                          " " +
+                          inquiry?.samplePdf?.subject +
+                          " " +
+                          inquiry?.samplePdf?.class || "N/A"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Info Grid */}
