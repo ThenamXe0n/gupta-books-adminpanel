@@ -71,7 +71,8 @@ const RegisteredUserDashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h1 className="text-xl font-bold text-gray-900">Registered Users</h1>
+        <h1 className="text-xl font-bold text-gray-900">Registered Users ({users.length})</h1>
+        <p className="px-4 bg-blue-900 text-white rounded-full ">showing result {filtered.length} of {users.length}</p>
 
         {/* Search + Export */}
         <div className="flex items-center space-x-3 mt-3 md:mt-0">
@@ -82,7 +83,7 @@ const RegisteredUserDashboard = () => {
             />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search users... "
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-3 py-2 border rounded-lg text-sm w-60 focus:ring-2 focus:ring-blue-500"

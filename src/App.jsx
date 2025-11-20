@@ -3,6 +3,7 @@ import { Route, Routes, Navigate } from "react-router";
 import LoginForm from "./pages/LoginPage";
 import SignupForm from "./pages/SignUp";
 import DashboardLayout from "./pages/DashboardLayout";
+import ReferralCodeManager from "./components/form/ReferralCodeManager";
 
 function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <Routes>
+      <Route path="test" element={<ReferralCodeManager />} />
       {/* Public Routes */}
       <Route
         path="/"
@@ -51,11 +53,7 @@ function App() {
       <Route
         path="/admin/dashboard/*"
         element={
-          isAdminLoggedIn ? (
-            <DashboardLayout />
-          ) : (
-            <Navigate to="/login" />
-          )
+          isAdminLoggedIn ? <DashboardLayout /> : <Navigate to="/login" />
         }
       />
 

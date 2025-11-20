@@ -11,6 +11,7 @@ import PDFDashboard from "../components/PDFDashboard";
 
 import "../index.css"; // ✅ Make sure global CSS (with scrollbar-hide class) is imported
 import RegisteredUsersDashboard from "../components/RegisteredUsersDashboard";
+import ReferralCodeManager from "../components/form/ReferralCodeManager";
 
 const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -28,7 +29,9 @@ const DashboardLayout = () => {
           <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-green-600 bg-clip-text text-transparent">
             📚 Admin Dashboard
           </h1>
-          <p className="text-gray-600 mt-1 text-sm">Manage bookstore operations</p>
+          <p className="text-gray-600 mt-1 text-sm">
+            Manage bookstore operations
+          </p>
         </div>
 
         {activeTab === "orders" && <OrdersDashboard />}
@@ -40,7 +43,7 @@ const DashboardLayout = () => {
         {activeTab === "reviews" && <ReviewsDashboard />}
         {activeTab === "pdf" && <PDFDashboard />}
         {activeTab === "users" && <RegisteredUsersDashboard />}
-        
+        {activeTab === "manage-referral" && <ReferralCodeManager />}
       </div>
     </div>
   );
