@@ -17,7 +17,7 @@ const ProductForm = ({
   products = [],
   mode = "add", // 'add' or 'edit'
   onVideoUpload, // ✅ New handler for video
-  videoPreview,  // ✅ Optional video preview state
+  videoPreview, // ✅ Optional video preview state
   onVideoRemove, // ✅ Optional video removal
 }) => {
   const isSetCategory = formData.category === "set";
@@ -28,7 +28,9 @@ const ProductForm = ({
       {/* Category Options */}
       <div className="grid grid-cols-2 gap-7">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Category
+          </label>
           <select
             value={formData.category}
             onChange={(e) => onFieldChange("category", e.target.value)}
@@ -37,13 +39,25 @@ const ProductForm = ({
           >
             <option>--select category--</option>
             {category.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
         </div>
-        
+        <FormField
+          label="Slug"
+          value={formData.slug}
+          onChange={(value) => onFieldChange("slug", value)}
+          required
+          disabled={loading}
+          placeholder="Enter Book slug e.g subject + Class + booktitle"
+        />
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Stream</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Stream
+          </label>
           <select
             value={formData.stream}
             onChange={(e) => onFieldChange("stream", e.target.value)}
@@ -52,7 +66,9 @@ const ProductForm = ({
           >
             <option>--select stream--</option>
             {streams.map((stream) => (
-              <option key={stream} value={stream}>{stream}</option>
+              <option key={stream} value={stream}>
+                {stream}
+              </option>
             ))}
           </select>
         </div>
@@ -107,7 +123,7 @@ const ProductForm = ({
             disabled={loading}
             placeholder="Enter book title"
           />
-          
+
           <SelectField
             label="Subject"
             value={formData.subject}
@@ -116,7 +132,7 @@ const ProductForm = ({
             required
             disabled={loading}
           />
-          
+
           <SelectField
             label="Class/Grade"
             value={formData.class}
@@ -220,7 +236,16 @@ const ProductForm = ({
 };
 
 // Helper Components
-const FormField = ({ label, type = "text", value, onChange, required, disabled, placeholder, step }) => (
+const FormField = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+  required,
+  disabled,
+  placeholder,
+  step,
+}) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-700">*</span>}
@@ -238,7 +263,14 @@ const FormField = ({ label, type = "text", value, onChange, required, disabled, 
   </div>
 );
 
-const SelectField = ({ label, value, onChange, options, required, disabled }) => (
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+  required,
+  disabled,
+}) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       {label} {required && <span className="text-red-700">*</span>}
@@ -252,7 +284,9 @@ const SelectField = ({ label, value, onChange, options, required, disabled }) =>
     >
       <option value="">Select {label.toLowerCase()}</option>
       {options.map((option) => (
-        <option key={option} value={option}>{option}</option>
+        <option key={option} value={option}>
+          {option}
+        </option>
       ))}
     </select>
   </div>

@@ -21,6 +21,7 @@ export const FORM_CONFIG = {
     imagePreviews: [],
     video: null, // ✅ Added video field
     videoPreview: null, // ✅ Added video preview field
+    slug:""
   },
 
   requiredFields: ["title", "author", "price", "subject", "class"],
