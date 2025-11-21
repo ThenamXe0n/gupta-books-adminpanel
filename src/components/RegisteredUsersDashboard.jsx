@@ -103,27 +103,27 @@ const RegisteredUserDashboard = () => {
       {/* TABLE */}
       <div className="overflow-x-auto bg-white shadow rounded-lg">
         <table className="min-w-full border-collapse">
-          <thead className="bg-gray-100 border-b">
+          <thead className="bg-blue-900  border-b">
             <tr>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 Name
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 Email
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 Phone
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 Address
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 City
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 State
               </th>
-              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+              <th className="py-3 px-4 text-left text-sm font-semibold text-gray-100">
                 Role
               </th>
             </tr>

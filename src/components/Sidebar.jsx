@@ -9,25 +9,81 @@ import {
   MessageCircle,
   User2Icon,
   File,
+  FileVideo2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import logo from "../assets/gph2.png";
-
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { id: "orders", label: "Orders", icon: ShoppingBag, color: "from-blue-500 to-cyan-500" },
-    { id: "products", label: "Products", icon: Package, color: "from-purple-500 to-pink-500" },
-    { id: "inquiries", label: "Inquiries", icon: BarChart3, color: "from-green-500 to-emerald-500" },
-    { id: "users", label: "Registered User", icon: User2Icon, color: "from-orange-500 to-yellow-500" },
-    { id: "manage-referral", label: "Manage Referrals", icon: MessageCircle, color: "from-red-500 to-yellow-500" },
-    { id: "banner", label: "Banner", icon: Image, color: "from-orange-500 to-red-500" },
-    { id: "offer", label: "Offer", icon: Tag, color: "from-indigo-500 to-blue-500" },
-    { id: "testimonials", label: "Testimonials", icon: MessageCircle, color: "from-pink-500 to-rose-500" },
-    { id: "pdf", label: "Add Pdf", icon: File, color: "from-indigo-500 to-purpul-500" },
-    { id: "reviews", label: "Reviews", icon: MessageCircle, color: "from-emrald-500 to-teal-500" },
+    {
+      id: "orders",
+      label: "Orders",
+      icon: ShoppingBag,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      id: "products",
+      label: "Products",
+      icon: Package,
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      id: "inquiries",
+      label: "Inquiries",
+      icon: BarChart3,
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      id: "users",
+      label: "Registered User",
+      icon: User2Icon,
+      color: "from-orange-500 to-yellow-500",
+    },
+    {
+      id: "video",
+      label: "Vidoe Manager",
+      icon: FileVideo2,
+      color: "from-blue-900 to-black",
+    },
+    {
+      id: "manage-referral",
+      label: "Manage Referrals",
+      icon: MessageCircle,
+      color: "from-red-500 to-yellow-500",
+    },
+    {
+      id: "banner",
+      label: "Banner",
+      icon: Image,
+      color: "from-orange-500 to-red-500",
+    },
+    {
+      id: "offer",
+      label: "Offer",
+      icon: Tag,
+      color: "from-indigo-500 to-blue-500",
+    },
+    {
+      id: "testimonials",
+      label: "Testimonials",
+      icon: MessageCircle,
+      color: "from-pink-500 to-rose-500",
+    },
+    {
+      id: "pdf",
+      label: "Add Pdf",
+      icon: File,
+      color: "from-indigo-500 to-purpul-500",
+    },
+    {
+      id: "reviews",
+      label: "Reviews",
+      icon: MessageCircle,
+      color: "from-emrald-500 to-teal-500",
+    },
   ];
 
   // 🔐 Logout
@@ -52,7 +108,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             alt="GPH Logo"
             className="w-15 h-15 object-contain mb-1 drop-shadow-md"
           />
-          
         </div>
 
         {/* Menu */}

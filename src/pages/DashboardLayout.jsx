@@ -12,6 +12,7 @@ import PDFDashboard from "../components/PDFDashboard";
 import "../index.css"; // ✅ Make sure global CSS (with scrollbar-hide class) is imported
 import RegisteredUsersDashboard from "../components/RegisteredUsersDashboard";
 import ReferralCodeManager from "../components/form/ReferralCodeManager";
+import VideoDashboard from "../components/VideoDashboard";
 
 const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -44,6 +45,7 @@ const DashboardLayout = () => {
         {activeTab === "pdf" && <PDFDashboard />}
         {activeTab === "users" && <RegisteredUsersDashboard />}
         {activeTab === "manage-referral" && <ReferralCodeManager />}
+        {activeTab === "video" && <VideoDashboard />}
       </div>
     </div>
   );
