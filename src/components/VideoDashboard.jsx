@@ -31,7 +31,7 @@ const VideoDashboard = () => {
     try {
       setLoading(true);
       const res = await axiosInstance.get("v3/videos");
-      setVideos(res.data || []);
+      setVideos(res.data.data || []);
     } catch (err) {
       console.error("Error fetching videos:", err);
     } finally {
@@ -79,7 +79,7 @@ const VideoDashboard = () => {
     }
   };
 
-  const filteredVideos = videos.filter((v) =>
+  const filteredVideos = videos?.filter((v) =>
     v.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
