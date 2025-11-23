@@ -14,6 +14,7 @@ export default function ReferralCodeManager() {
     ownerType: "student",
     maxUses: 5,
     redeemableamount: "",
+    referralType: "percentage",
   });
 
   const [referralList, setReferralList] = useState([]);
@@ -55,6 +56,7 @@ export default function ReferralCodeManager() {
           ownerType: "student",
           maxUses: 5,
           redeemableamount: "",
+          referralType: "percentage",
         });
 
         setShowModal(false);
@@ -90,7 +92,6 @@ export default function ReferralCodeManager() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-10">
-
       {/* --------------------------------- HEADER --------------------------------- */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-800 tracking-tight">
@@ -109,28 +110,34 @@ export default function ReferralCodeManager() {
       <div className="grid grid-cols-3 gap-6">
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5">
           <p className="text-sm text-slate-500">Total Referral Codes</p>
-          <h2 className="text-2xl font-semibold text-slate-800 mt-1">{total}</h2>
+          <h2 className="text-2xl font-semibold text-slate-800 mt-1">
+            {total}
+          </h2>
         </div>
 
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5">
           <p className="text-sm text-slate-500">Active Codes</p>
-          <h2 className="text-2xl font-semibold text-green-600 mt-1">{active}</h2>
+          <h2 className="text-2xl font-semibold text-green-600 mt-1">
+            {active}
+          </h2>
         </div>
 
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5">
           <p className="text-sm text-slate-500">Inactive Codes</p>
-          <h2 className="text-2xl font-semibold text-red-600 mt-1">{inactive}</h2>
+          <h2 className="text-2xl font-semibold text-red-600 mt-1">
+            {inactive}
+          </h2>
         </div>
       </div>
 
       {/* --------------------------------- FILTERS + TABLE --------------------------------- */}
       <div className="bg-white shadow-lg border border-slate-200 rounded-xl p-8">
-
         <div className="flex items-center justify-between mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-slate-800">Referral Codes List</h3>
+          <h3 className="text-lg font-semibold text-slate-800">
+            Referral Codes List
+          </h3>
 
           <div className="flex items-center gap-3">
-
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
@@ -212,10 +219,14 @@ export default function ReferralCodeManager() {
                   <td className="p-3 font-mono text-indigo-600">{item.code}</td>
                   <td className="p-3">{item.ownerName || "-"}</td>
                   <td className="p-3">{item.ownerEmail}</td>
-                  <td className="p-3 capitalize">{item.ownerType}</td>
+                  <td className="p-3 capitalize">{item.referralType}</td>
                   <td className="p-3">{item.maxUses}</td>
                   <td className="p-3">{item.usedCount}</td>
-                  <td className="p-3 font-semibold">₹{item.redeemableamount}</td>
+                  <td className="p-3 font-semibold text-sm ">
+                    {item.referralType === "amount" && "₹"}
+                    {item.redeemableamount}
+                    {item.referralType === "percentage" && "%"}
+                  </td>
                   <td className="p-3">
                     {item.isActive ? (
                       <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
@@ -247,7 +258,6 @@ export default function ReferralCodeManager() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white w-full max-w-2xl shadow-xl rounded-xl p-6 border border-slate-200 relative">
-
             <button
               onClick={() => setShowModal(false)}
               className="absolute right-4 top-4 text-slate-500 hover:text-slate-700"
@@ -260,7 +270,6 @@ export default function ReferralCodeManager() {
             </h2>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-5">
-
               <div className="space-y-1">
                 <label className="text-sm text-slate-700">Owner Name</label>
                 <input
@@ -286,6 +295,19 @@ export default function ReferralCodeManager() {
                     setForm({ ...form, ownerEmail: e.target.value })
                   }
                 />
+              </div>
+              <div className="space-y-1 col-span-2">
+                <label className="text-sm text-slate-700">Referral Type</label>
+                <select
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"
+                  value={form.referralType}
+                  onChange={(e) =>
+                    setForm({ ...form, referralType: e.target.value })
+                  }
+                >
+                  <option value="amount">Amount</option>
+                  <option value="percentage">Percentage</option>
+                </select>
               </div>
 
               <div className="space-y-1">
@@ -316,10 +338,12 @@ export default function ReferralCodeManager() {
 
               <div className="col-span-2 space-y-1">
                 <label className="text-sm text-slate-700">
-                  Redeemable Amount
+                  Redeemable{" "}
+                  {form.referralType === "percentage" ? "Percentage" : "Amount"}
                 </label>
                 <input
                   type="number"
+                  max={form.referralType === "percentage" ? 100 : undefined} // limit to 100
                   required
                   className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                   value={form.redeemableamount}
@@ -341,7 +365,6 @@ export default function ReferralCodeManager() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

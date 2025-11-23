@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Trash2,
@@ -9,6 +9,7 @@ import {
   Play,
 } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
+import Notiflix from "notiflix";
 
 const VideoDashboard = () => {
   const [videos, setVideos] = useState([]);
@@ -29,18 +30,22 @@ const VideoDashboard = () => {
 
   const fetchVideos = async () => {
     try {
+      Notiflix.Loading.circle();
       setLoading(true);
       const res = await axiosInstance.get("v3/videos");
       setVideos(res.data.data || []);
+      Notiflix.Loading.remove();
     } catch (err) {
       console.error("Error fetching videos:", err);
     } finally {
+      Notiflix.Loading.remove();
       setLoading(false);
     }
   };
 
   // Upload new video
   const handleVideoUpload = async (e) => {
+    Notiflix.Loading.circle();
     e.preventDefault();
 
     if (!videoForm.video) return alert("Please upload a video");
@@ -61,21 +66,26 @@ const VideoDashboard = () => {
         setVideoForm({ title: "", description: "", video: null });
         fetchVideos();
       }
+      Notiflix.Loading.remove();
     } catch (err) {
       console.error("Upload Error:", err);
       alert("Video upload failed!");
+      Notiflix.Loading.remove();
     }
   };
 
   // Delete video
   const handleDeleteVideo = async (id) => {
+     Notiflix.Loading.circle();
     if (!window.confirm("Are you sure you want to delete this video?")) return;
 
     try {
       const res = await axiosInstance.delete(`v3/videos/${id}`);
       if (res.data) fetchVideos();
+       Notiflix.Loading.remove();
     } catch (err) {
       console.error("Error deleting video:", err);
+       Notiflix.Loading.remove();
     }
   };
 
@@ -237,9 +247,7 @@ const VideoDashboard = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {video.title}
-                  </h3>
+                  <h3 className="font-semibold text-gray-900">{video.title}</h3>
                   <p className="text-gray-500 text-sm">{video.description}</p>
 
                   <p className="text-xs text-gray-400 mt-1">
@@ -283,9 +291,13 @@ const VideoDashboard = () => {
 // 📊 Stats Card Component
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="relative bg-white rounded-xl shadow-md p-4 overflow-hidden hover:shadow-lg transition hover:scale-105">
-    <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${color} opacity-10 rounded-bl-2xl`}></div>
+    <div
+      className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${color} opacity-10 rounded-bl-2xl`}
+    ></div>
     <div className="relative">
-      <div className={`w-8 h-8 bg-gradient-to-r ${color} rounded-lg flex items-center justify-center mb-2`}>
+      <div
+        className={`w-8 h-8 bg-gradient-to-r ${color} rounded-lg flex items-center justify-center mb-2`}
+      >
         <Icon className="text-white" size={14} />
       </div>
       <h3 className="text-gray-600 text-xs font-medium">{title}</h3>
