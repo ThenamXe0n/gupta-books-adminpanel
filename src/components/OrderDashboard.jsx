@@ -8,10 +8,12 @@ import {
   X,
   Settings,
   Truck,
+  SendHorizonalIcon,
 } from "lucide-react";
 import { fetchOrderApi } from "../redux/apis/apiCollection";
 import axiosInstance from "../services/axiosInstance";
 import toast from "react-hot-toast";
+import Notiflix from "notiflix";
 
 const OrdersDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,6 +119,23 @@ const OrdersDashboard = () => {
     } catch (error) {
       console.error("Error updating shipping charges:", error);
       toast.error("Error updating shipping charges");
+    }
+  };
+
+  const handleSendReferralCode = async (userId) => {
+    Notiflix.Loading.circle();
+    try {
+      const sendRef = await axiosInstance.post(
+        `/v3/referral/sendMail/${userId}`
+      );
+      if (sendRef.data.status) {
+        toast.success(sendRef.data.message);
+        Notiflix.Loading.remove();
+      }
+      Notiflix.Loading.remove();
+    } catch (error) {
+      toast.error(error.response.data.message);
+      Notiflix.Loading.remove();
     }
   };
 
@@ -387,12 +406,18 @@ const OrdersDashboard = () => {
                     <td className="py-3 px-3 text-gray-600 text-sm">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 flex items-center justify-start">
                       <button
                         onClick={() => setSelectedOrder(order)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
                         <Eye size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleSendReferralCode(order.userId)}
+                        className="bg-blue-900 flex items-center gap-2 px-3 py-1 hover:bg-blue-600 cursor-pointer active:scale-95 rounded-md text-white"
+                      >
+                        <SendHorizonalIcon size={20} /> Send Referral
                       </button>
                     </td>
                   </tr>
