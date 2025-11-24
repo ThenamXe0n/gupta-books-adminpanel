@@ -123,6 +123,10 @@ const OrdersDashboard = () => {
   };
 
   const handleSendReferralCode = async (userId) => {
+    if (!confirm(`confirm if you want to share referral email`)) {
+      alert("email send aborted!");
+      return;
+    }
     Notiflix.Loading.circle();
     try {
       const sendRef = await axiosInstance.post(
